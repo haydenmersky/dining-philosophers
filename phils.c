@@ -106,12 +106,25 @@ void printStates() {
 }
 
 // --- MAIN TESTING VERSION ---
-int main() {
+int main(int argc, char *argv[]) {
     printf("=== Dining Philosophers Mock Test ===\n");
+
+    // Check command line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <Number Of Philosophers> <Number Of Times To Eat>\n", argv[0]);
+        return 1;
+    }
+
+    // Parse command line arguments
+    numOfPhils = atoi(argv[1]);
+    numOfTimesToEat = atoi(argv[2]);
+
+    pthread_t threads[numOfPhils];
 
     // Allocate memory
     chopsticks = malloc(numOfPhils * sizeof(sem_t));
     state = malloc(numOfPhils * sizeof(int));
+    phils = malloc(numOfPhils * sizeof(int));
 
     // Initialize semaphores and states
     for (int i = 0; i < numOfPhils; i++) {
