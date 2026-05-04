@@ -3,7 +3,8 @@
 * Name: Hayden Mersky & Antonio Hernandez
 * Date: 04/28/2026
 * Description: Simulates Dining Philosophers problem using 
-* threads and semaphores.
+* threads and semaphores. Philosophers start with a random state
+* of either thinking or hungry and then eat a specified number of times.
 * 
 *
 */
