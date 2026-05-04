@@ -54,15 +54,112 @@ void putDownChopsticks(int num){ // puts chopsticks back down (denotes when phil
     sem_post(&chopsticks[(num + 1) % numOfPhils]);
 }
 
-void *philosopher(); // must be a pointer when working with threading
+void *philosopher(void *arg){ // must be a pointer when working with threading
                      // determines first action of a philospher when thread is created
+    // Get Specific Philospher data
+    int id = *(int *)arg; // get phil ID
+    int eatCount = 0; //Ensure one is not eating more than the other so we count
 
+    //Show user the state
+    if (state[id] == THINKING) {
+        printf("Philosopher %d is thinking...\n", id);
+    } else if (state[id] == HUNGRY) {
+        printf("Philosopher %d is hungry...\n", id);
+    }
+
+    while (eatCount < numOfTimesToEat) {
+        //If thinking must become hungry
+        if (state[id] == THINKING){
+            sleep(1 + rand() % 2);
+            state[id] = HUNGRY;
+            printf("Philosopher %d is hungry...\n", id);
+        }
+
+        // If hungry try to eat
+        pickupChopsticks(id);
+
+        //If eating update
+        state[id] = EATING;
+        printf("Philosopher %d is eating...\n", id);
+        sleep(1 + rand() % 2);
+        eatCount++;
+
+        // Done eating 
+        putDownChopsticks(id);
+
+        //think before ext cycle
+        sleep(1 + rand() % 2);
+    }
+
+    pthread_exit(NULL);
+
+}
+
+
+// --- Test helper ---
+void printStates() {
+    printf("States: ");
+    for (int i = 0; i < numOfPhils; i++) {
+        printf("%d ", state[i]);
+    }
+    printf("\n");
+}
+
+// --- MAIN TESTING VERSION ---
+int main() {
+    printf("=== Dining Philosophers Mock Test ===\n");
+
+    // Allocate memory
+    chopsticks = malloc(numOfPhils * sizeof(sem_t));
+    state = malloc(numOfPhils * sizeof(int));
+
+    // Initialize semaphores and states
+    for (int i = 0; i < numOfPhils; i++) {
+        sem_init(&chopsticks[i], 0, 1);
+        state[i] = THINKING;
+    }
+
+    printStates();
+
+    // TEST 1: Even philosopher picks up left then right
+    printf("\nTEST 1: Philosopher 2 pickup\n");
+    pickupChopsticks(2);
+    printStates();
+
+    // TEST 2: Odd philosopher picks up right then left
+    printf("\nTEST 2: Philosopher 3 pickup\n");
+    pickupChopsticks(3);
+    printStates();
+
+    // TEST 3: Put down chopsticks
+    printf("\nTEST 3: Philosopher 2 put down\n");
+    putDownChopsticks(2);
+    printStates();
+
+    // TEST 4: Wrap-around test (philosopher 4 right chopstick = 0)
+    printf("\nTEST 4: Philosopher 4 pickup (wrap-around)\n");
+    pickupChopsticks(4);
+    printStates();
+
+    // Cleanup
+    free(chopsticks);
+    free(state);
+    printf("\n=== TEST COMPLETE ===\n");
+    return 0;
+}
+
+/*
 int main(int argc, char *argv[]) {
 
     // thread usage
     pthread_t threads[numOfPhils];
     // for threads you will need to incorporate the concept of creating and
     // joining to solve this problem
+
+    // initialize the threads and the philosphers
+    pthread_create(&threads[i], NULL, philosopher, &phils[i]);
+
+
 
     // memory allocation for chopsticks, state, and philosphers
     chopsticks = malloc(numOfPhils * sizeof(sem_t));
@@ -78,3 +175,4 @@ int main(int argc, char *argv[]) {
     free(phils);
     return 0;
 }
+*/
