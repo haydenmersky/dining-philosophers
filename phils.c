@@ -31,9 +31,9 @@ void test(); // used to check state of philsopher and state of each Chopstick
              // if philospher is hungry and both left and right are satisifed
              // then they should be able to eat now
 
-void pickupChopsticks(int num){ // waits to grab chopsticks for philospher (denotes when philospher is hungry)
-    printf("Philosopher %d is hungry...\n", num);
+void pickupChopsticks(int num){ // waits to grab chopsticks for philospher (sets philospher to hungry)
     state[num] = HUNGRY; // set state
+    printf("Philosopher %d is hungry...\n", num);
 
     // Implement asymmetric solution
     if (num % 2 == 0) { // even numbered philosopher
@@ -47,48 +47,35 @@ void pickupChopsticks(int num){ // waits to grab chopsticks for philospher (deno
 }
 
 void putDownChopsticks(int num){ // puts chopsticks back down (denotes when philospher is thinking)
-    printf("Philosopher %d is thinking...\n", num);
+    sem_post(&chopsticks[num]); // Puts down the chopstick on the left
+    sem_post(&chopsticks[(num + 1) % numOfPhils]); // Puts down the chopstick on the right
     state[num] = THINKING; // set state
-
-    sem_post(&chopsticks[num]);
-    sem_post(&chopsticks[(num + 1) % numOfPhils]);
 }
 
 void *philosopher(void *arg){ // must be a pointer when working with threading
                      // determines first action of a philospher when thread is created
     // Get Specific Philospher data
     int id = *(int *)arg; // get phil ID
-    int eatCount = 0; //Ensure one is not eating more than the other so we count
-
-    //Show user the state
-    if (state[id] == THINKING) {
-        printf("Philosopher %d is thinking...\n", id);
-    } else if (state[id] == HUNGRY) {
-        printf("Philosopher %d is hungry...\n", id);
-    }
+    int eatCount = 0; //Ensure one is not eating more than the other so we count 
 
     while (eatCount < numOfTimesToEat) {
-        //If thinking must become hungry
-        if (state[id] == THINKING){
-            sleep(1 + rand() % 2);
-            state[id] = HUNGRY;
-            printf("Philosopher %d is hungry...\n", id);
-        }
+        
+        // While Thinking
+        state[id] = THINKING;
+        printf("Philosopher %d is thinking...\n", id);
+        sleep(1 + rand() % 2); // Simulate random thinking time
 
-        // If hungry try to eat
+        // Hungry and try to eat
         pickupChopsticks(id);
 
-        //If eating update
+        // Eating
         state[id] = EATING;
         printf("Philosopher %d is eating...\n", id);
-        sleep(1 + rand() % 2);
+        sleep(1 + rand() % 2); // Simulate random eating time
         eatCount++;
 
         // Done eating 
         putDownChopsticks(id);
-
-        //think before ext cycle
-        sleep(1 + rand() % 2);
     }
 
     pthread_exit(NULL);
