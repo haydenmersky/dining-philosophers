@@ -92,6 +92,7 @@ void printStates() {
     printf("\n");
 }
 
+/*
 // --- MAIN TESTING VERSION ---
 int main(int argc, char *argv[]) {
     printf("=== Dining Philosophers Mock Test ===\n");
@@ -147,32 +148,75 @@ int main(int argc, char *argv[]) {
     printf("\n=== TEST COMPLETE ===\n");
     return 0;
 }
+*/
 
-/*
+
 int main(int argc, char *argv[]) {
 
+    // Check command line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <Number Of Philosophers> <Number Of Times To Eat>\n", argv[0]);
+        return 1;
+    }
+
+    // Parse command line arguments
+    numOfPhils = atoi(argv[1]);
+    numOfTimesToEat = atoi(argv[2]);
+
+    srand(time(NULL)); // Seed the random function
+
+    // Allocate memory
+    chopsticks = malloc(numOfPhils * sizeof(sem_t));
+    state = malloc(numOfPhils * sizeof(int));
+    phils = malloc(numOfPhils * sizeof(int));
+
+    // Initialize semaphores and states
+    for (int i = 0; i < numOfPhils; i++) {
+        sem_init(&chopsticks[i], 0, 1);
+    }
+
+    // Template Code:
     // thread usage
     pthread_t threads[numOfPhils];
     // for threads you will need to incorporate the concept of creating and
     // joining to solve this problem
 
     // initialize the threads and the philosphers
-    pthread_create(&threads[i], NULL, philosopher, &phils[i]);
+    for (int i = 0; i < numOfPhils; i++) {
+        phils[i] = i; // assign philosopher ID
+
+        // Random state at the start
+        if (rand() % 2 == 0) {
+            state[i] = THINKING;
+        } else {
+            state[i] = HUNGRY;
+        }
+
+        // Print initial state
+        if (state[i] == THINKING) {
+            printf("Philosopher %d is thinking...\n", i);
+            } else {
+            printf("Philosopher %d is hungry...\n", i);
+                }
+
+        // Template Code
+        pthread_create(&threads[i], NULL, philosopher, &phils[i]);
+
+    }
+
+    for (int i = 0; i < numOfPhils; i++) { // Join the threads together
+        pthread_join(threads[i], NULL);
+    }
+
+    for (int i = 0; i < numOfPhils; i++) { // Destroy semaphores
+        sem_destroy(&chopsticks[i]);
+    }
 
 
-
-    // memory allocation for chopsticks, state, and philosphers
-    chopsticks = malloc(numOfPhils * sizeof(sem_t));
-    state = malloc(numOfPhils * sizeof(int));
-    phils = malloc(numOfPhils * sizeof(int));
-
-    // create philosphers and give them a state based on numOfPhils
-    // then create a thread for each using
-
-
-    free(forks);
+    // Release memory and return
+    free(chopsticks);    
     free(state);
     free(phils);
     return 0;
 }
-*/
+
